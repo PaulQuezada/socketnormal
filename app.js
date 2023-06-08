@@ -2,9 +2,9 @@ import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import path from 'path';
+const app = express();
 const http = require('http').createServer(app);
 
-const app = express();
 
 //Conexion DB Local
 /* const uri = 'mongodb://localhost:27017/myapp'; */
@@ -76,7 +76,7 @@ io.on('connection', (socket) => {
 //Puerto de socket
 // Cerramos por completo el servidor para desconectar a los usuarios q esten dentro
 
-var portsocket = process.env.SOCKETPORT || 5003;
+var portsocket = process.env.PORT || 5003;
 
 http.listen(portsocket, () => {
   console.log('listening on :', portsocket);
