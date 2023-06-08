@@ -40,6 +40,7 @@ const io = require('socket.io')(http, {
 
 let usuariosConectados = 0
 io.on('connection', (socket) => {
+  var viaje_enviado = null;
   usuariosConectados++;
   console.log("Total Usuarios(CON):", usuariosConectados);
   console.log("Usuario Conectado:", socket.id);
@@ -50,9 +51,24 @@ io.on('connection', (socket) => {
   });
   socket.on("mensaje:enviado", (data) => {
     // Envía el mensaje a todos los clientes conectads, except el q lo envia
+    console.log("(viaje_enviado)"+viaje_enviado+":(data_actual)"+data.idviaje)
+    if (viaje_enviado != data.idviaje  || viaje_enviado == null) {
+      console.log("Mensaje Enviado:")
+      socket.broadcast.emit("mensaje:recibido", data);
+      console.log("Mensaje Recibido:", data)
+    } else {
+      console.log("Mensaje ERROR no ENVIADO:")
+
+      
+    }
+    viaje_enviado = data.idviaje
+  });
+
+  socket.on("viaje:enviado", (data) => {
+    // Envía el mensaje a todos los clientes conectads, except el q lo envia
     console.log("Mensaje Enviado:")
-    socket.broadcast.emit("mensaje:recibido", data);
-    console.log("Mensaje Recibido:")
+    socket.broadcast.emit("viaje:recibido", data);
+    console.log("Mensaje Recibido:", data)
   });
 
 });
