@@ -2,9 +2,9 @@ import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import path from 'path';
-const app = express();
 const http = require('http').createServer(app);
 
+const app = express();
 
 //Conexion DB Local
 /* const uri = 'mongodb://localhost:27017/myapp'; */
@@ -39,29 +39,36 @@ const io = require('socket.io')(http, {
 });
 
 let usuariosConectados = 0
+var viaje_enviado = null;
+var pasajaro_enviado = null;
 io.on('connection', (socket) => {
-  var viaje_enviado = null;
   usuariosConectados++;
-  console.log("Total Usuarios(CON):", usuariosConectados);
-  console.log("Usuario Conectado:", socket.id);
+
   socket.on('disconnect', () => {
     usuariosConectados--;
-    console.log("Usuario Conectado:", socket.id);
-    console.log("Total Usuarios(DES):", usuariosConectados);
+
   });
-  socket.on("mensaje:enviado", (data) => {
+  socket.on("mensaje:enviado", async (data) => {
     // Envía el mensaje a todos los clientes conectads, except el q lo envia
-    console.log("(viaje_enviado)"+viaje_enviado+":(data_actual)"+data.idviaje)
-    if (viaje_enviado != data.idviaje  || viaje_enviado == null) {
-      console.log("Mensaje Enviado:")
-      socket.broadcast.emit("mensaje:recibido", data);
-      console.log("Mensaje Recibido:", data)
+    console.log("MENSAJE AHORA")
+    console.log(data)
+    console.log("MENSJAES ANTERIORES")
+    console.log(viaje_enviado)
+    console.log(pasajaro_enviado)
+
+    console.log(viaje_enviado + "!=" + data.idviaje + " && " + pasajaro_enviado + " != " + data.nombrepasajero)
+    if (viaje_enviado == null) {
+      await socket.broadcast.emit("mensaje:recibido", data);
+    } else if (viaje_enviado != data.idviaje) {
+      await socket.broadcast.emit("mensaje:recibido", data);
+    }
+    else if (viaje_enviado == data.idviaje && pasajaro_enviado != data.nombrepasajero) {
+      await socket.broadcast.emit("mensaje:recibido", data);
     } else {
       console.log("Mensaje ERROR no ENVIADO:")
-
-      
     }
     viaje_enviado = data.idviaje
+    pasajaro_enviado = data.nombrepasajero
   });
 
   socket.on("viaje:enviado", (data) => {
@@ -76,7 +83,7 @@ io.on('connection', (socket) => {
 //Puerto de socket
 // Cerramos por completo el servidor para desconectar a los usuarios q esten dentro
 
-var portsocket = process.env.PORT || 5003;
+var portsocket = process.env.SOCKETPORT || 5003;
 
 http.listen(portsocket, () => {
   console.log('listening on :', portsocket);
